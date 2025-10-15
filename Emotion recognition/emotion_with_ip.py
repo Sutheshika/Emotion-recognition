@@ -1,33 +1,35 @@
 from facial_emotion_recognition import EmotionRecognition
+import urllib.request
 import cv2
+import numpy as np
 import imutils
 
 # Initialize the Emotion Recognition model
 er = EmotionRecognition(device='cpu')
 
-# Open webcam (0 = default camera)
-webcam = cv2.VideoCapture(0)
+# IP camera URL (from mobile IP Webcam app)
+url = 'http://192.168.1.33:8080/shot.jpg'
 
 while True:
-    ret, frame = webcam.read()
-    if not ret:
-        break
+    # Read image from the IP camera
+    imgPath = urllib.request.urlopen(url)
+    imgNp = np.array(bytearray(imgPath.read()), dtype=np.uint8)
+    frame = cv2.imdecode(imgNp, -1)
 
-    # Recognize emotion
+    # Perform emotion recognition
     frame = er.recognise_emotion(frame, return_type='BGR')
 
-    # Resize for better display
+    # Resize frame for better display
     frame = imutils.resize(frame, width=450)
 
-    # Show output
-    cv2.imshow("Facial Emotion Recognition", frame)
+    # Display the result
+    cv2.imshow("Frame", frame)
 
     # Exit when 'ESC' key is pressed
     key = cv2.waitKey(1)
     if key == 27:
         break
 
-# Release and close
-webcam.release()
 cv2.destroyAllWindows()
+
 
